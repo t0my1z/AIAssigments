@@ -10,6 +10,7 @@
 #include "AICharacter.generated.h"
 
 class SteeringBase;
+class ATargetPoint;
 
 UENUM(BlueprintType)
 enum class SteeringBehavior : uint8
@@ -51,6 +52,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AIChar)
 	FVector m_currentAngularVelocity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AIChar)
+	TArray<ATargetPoint*> m_pathTargets;
 
 	SteeringBase* m_currentSteering;
 	SteeringBase* m_currentRotationSteering;

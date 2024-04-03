@@ -13,6 +13,7 @@ struct Params
     float targetRotation;
     float max_angular_velocity;
     float max_angular_acceleration;
+
 };
 
 bool ReadParams(const char* filename, Params& params);
