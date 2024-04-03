@@ -7,6 +7,7 @@
 #include "SeekSteering.h"
 #include "ArriveSteering.h"
 #include "AlignSteering.h"
+#include "util.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -53,6 +54,22 @@ void AAICharacter::OnClickedRight(const FVector& mousePosition)
 	FVector dir = (mousePosition - GetActorLocation()).GetSafeNormal();
 	float angle = FMath::RadiansToDegrees(atan2(dir.Z, dir.X));
 	m_params.targetRotation = angle;
+}
+
+
+
+float AAICharacter::GetActorAngle()
+{
+	FQuat currQuat = GetActorQuat();
+	FVector axis;
+	float axisAngle;
+	currQuat.ToAxisAndAngle(axis, axisAngle);
+	axisAngle = FMath::RadiansToDegrees(axisAngle);
+	if (axis.Y > 0.0f)
+		axisAngle = -axisAngle;
+
+	axisAngle = convertTo360(axisAngle);
+	return axisAngle;
 }
 
 void AAICharacter::ApplySteeringBehaviors(float DeltaTime)
@@ -128,4 +145,20 @@ void AAICharacter::DrawDebug()
 		{ FVector(100.f, 0.f, 0.f), FVector(200.f, 0.f, 0.f), FVector(200.f, 0.f, 100.0f) }
 	};
 	SetPolygons(this, TEXT("navmesh"), TEXT("mesh"), Polygons, NavmeshMaterial);
+}
+
+float AAICharacter::convertTo360(float a) //For some reason this gave me compile erros if I used utils
+{
+	if (a < 0.0f)
+	{
+		int n = static_cast<int>(fabs(a) / 360);
+		a += (n + 1) * 360;
+	}
+	else if (a > 360)
+	{
+		int n = static_cast<int>(a / 360);
+		a -= n * 360;
+	}
+
+	return a;
 }

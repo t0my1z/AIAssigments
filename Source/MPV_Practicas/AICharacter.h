@@ -6,8 +6,6 @@
 #include "GameFramework/Pawn.h"
 #include "params/params.h"
 #include "GameFramework/PlayerController.h"
-#include "util.h"
-
 
 #include "AICharacter.generated.h"
 
@@ -54,8 +52,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AIChar)
 	FVector m_currentAngularVelocity;
 
-
-
 	SteeringBase* m_currentSteering;
 	SteeringBase* m_currentRotationSteering;
 
@@ -78,20 +74,10 @@ public:
 	
 	const Params& GetParams() const { return m_params; }
 
-	float GetActorAngle() const
-	{
-		FQuat currQuat = GetActorQuat();
-		FVector axis;
-		float axisAngle;
-		currQuat.ToAxisAndAngle(axis, axisAngle);
-		axisAngle = FMath::RadiansToDegrees(axisAngle);
-		if (axis.Y > 0.0f)
-			axisAngle = -axisAngle;
-
-		axisAngle = convertTo360(axisAngle);
-		return axisAngle;
-	}
+	float GetActorAngle() ;
 	void SetActorAngle(float angle) { FRotator newRot(angle, 0.0f, 0.0f); SetActorRotation(newRot); }
+
+	float convertTo360(float a);
 
 	void ApplySteeringBehaviors(float DeltaTime);
 

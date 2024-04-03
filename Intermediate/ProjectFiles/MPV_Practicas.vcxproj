@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0718E304-FB64-3EBD-8DDA-A462E909D83C}</ProjectGuid>
+    <ProjectGuid>{CB299BB3-55AE-3295-B38D-507D9F7BC477}</ProjectGuid>
     <RootNamespace>MPV_Practicas</RootNamespace>
   </PropertyGroup>
   <Import Project="UECommon.props" />
