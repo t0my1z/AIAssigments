@@ -7,6 +7,7 @@
 #include "SeekSteering.h"
 #include "ArriveSteering.h"
 #include "AlignSteering.h"
+#include "PathFollowingSteering.h"
 #include "util.h"
 
 // Sets default values
@@ -97,6 +98,8 @@ void AAICharacter::ApplySteeringBehaviors(float DeltaTime)
 		break;
 	case SteeringBehavior::Pursue:
 		break;
+	case SteeringBehavior::PathFollowing:
+		m_currentSteering = new PathFollowingSteering();
 	default:
 		break;
 	}
@@ -105,7 +108,7 @@ void AAICharacter::ApplySteeringBehaviors(float DeltaTime)
 	{
 		m_currentVelocity += m_currentSteering->GetSteering(this, DeltaTime);
 
-		m_currentVelocity.GetClampedToMaxSize(m_params.max_velocity);
+		m_currentVelocity = m_currentVelocity.GetClampedToMaxSize(m_params.max_velocity);
 
 		SetActorLocation(GetActorLocation() + m_currentVelocity * DeltaTime);
 	}

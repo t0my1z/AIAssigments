@@ -19,7 +19,8 @@ enum class SteeringBehavior : uint8
 	Arrive UMETA(DisplayName = "Arrive"),
 	Align UMETA(DisplayName = "Align"),
 	ArriveAndAlign UMETA(DisplayName = "ArriveAndAlign"),
-	Pursue UMETA(DisplayName = "Pursue")
+	Pursue UMETA(DisplayName = "Pursue"),
+	PathFollowing UMETA(DisplayName = "PathFollowing")
 };
 
 UCLASS()

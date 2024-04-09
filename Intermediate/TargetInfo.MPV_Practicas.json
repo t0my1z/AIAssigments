@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "MPV_Practicas",
+			"Path": "..\\Source\\MPV_Practicas.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "MPV_PracticasEditor",
+			"Path": "..\\Source\\MPV_PracticasEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}
