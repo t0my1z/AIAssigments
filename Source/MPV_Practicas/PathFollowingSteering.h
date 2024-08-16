@@ -16,5 +16,4 @@ public:
 	
 	virtual FVector GetSteering(AAICharacter* _pChar, float DeltaTime) override;
 
-	float IsPointOnSegment(FVector _pos1, FVector _pos2, FVector _pointToCheck);
 };

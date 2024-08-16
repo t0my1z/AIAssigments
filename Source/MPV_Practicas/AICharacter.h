@@ -20,7 +20,19 @@ enum class SteeringBehavior : uint8
 	Align UMETA(DisplayName = "Align"),
 	ArriveAndAlign UMETA(DisplayName = "ArriveAndAlign"),
 	Pursue UMETA(DisplayName = "Pursue"),
-	PathFollowing UMETA(DisplayName = "PathFollowing")
+	PathFollowing UMETA(DisplayName = "PathFollowing"),
+	ObstacleAvoidance UMETA(DisplayName = "ObstacleAvoidance")
+};
+
+USTRUCT(BlueprintType)
+struct FObstacles
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AIChar)
+	TArray<ATargetPoint*> locations;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AIChar)
+	TArray<float> radiuses;
 };
 
 UCLASS()
@@ -57,6 +69,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AIChar)
 	TArray<ATargetPoint*> m_pathTargets;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AIChar)
+	FObstacles m_pathObstacles;
+	
 	SteeringBase* m_currentSteering;
 	SteeringBase* m_currentRotationSteering;
 
@@ -79,7 +94,7 @@ public:
 	
 	const Params& GetParams() const { return m_params; }
 
-	float GetActorAngle() ;
+	float GetActorAngle();
 	void SetActorAngle(float angle) { FRotator newRot(angle, 0.0f, 0.0f); SetActorRotation(newRot); }
 
 	float convertTo360(float a);

@@ -7,8 +7,10 @@
 #include "SeekSteering.h"
 #include "ArriveSteering.h"
 #include "AlignSteering.h"
+#include "ObstacleAvoidance.h"
 #include "PathFollowingSteering.h"
 #include "util.h"
+#include "Engine/TargetPoint.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -75,24 +77,20 @@ float AAICharacter::GetActorAngle()
 
 void AAICharacter::ApplySteeringBehaviors(float DeltaTime)
 {
-	m_currentSteering = NULL;
-	m_currentRotationSteering = NULL;
+	m_currentSteering = nullptr;
+	m_currentRotationSteering = nullptr;
 	switch (m_currentBehavior)
 	{
 	case SteeringBehavior::Seek:
-
 		m_currentSteering = new SeekSteering();
 		break;
 	case SteeringBehavior::Arrive:
-
 		m_currentSteering = new ArriveSteering();
 		break;
 	case SteeringBehavior::Align:
-
 		m_currentRotationSteering = new AlignSteering();
 		break;
 	case SteeringBehavior::ArriveAndAlign:
-
 		m_currentSteering = new ArriveSteering();
 		m_currentRotationSteering = new AlignSteering();
 		break;
@@ -100,17 +98,30 @@ void AAICharacter::ApplySteeringBehaviors(float DeltaTime)
 		break;
 	case SteeringBehavior::PathFollowing:
 		m_currentSteering = new PathFollowingSteering();
+		m_params.targetPosition = m_currentSteering->GetSteering(this, DeltaTime);
+		delete m_currentSteering;
+		m_currentSteering = new SeekSteering();
+		break;
+	case SteeringBehavior::ObstacleAvoidance:
+		m_currentSteering = new PathFollowingSteering();
+		m_params.targetPosition = m_currentSteering->GetSteering(this, DeltaTime);
+		delete m_currentSteering;
+		m_currentSteering = new ObstacleAvoidance();
+		m_params.targetPosition = m_currentSteering->GetSteering(this, DeltaTime);
+		delete m_currentSteering;
+		m_currentSteering = new SeekSteering();
+		break;
 	default:
 		break;
 	}
-
+	
 	if (m_currentSteering)
 	{
 		m_currentVelocity += m_currentSteering->GetSteering(this, DeltaTime);
 
 		m_currentVelocity = m_currentVelocity.GetClampedToMaxSize(m_params.max_velocity);
 
-		SetActorLocation(GetActorLocation() + m_currentVelocity * DeltaTime);
+		SetActorLocation(GetActorLocation() + m_currentVelocity * DeltaTime, false);
 	}
 
 	if (m_currentRotationSteering)
@@ -124,30 +135,25 @@ void AAICharacter::ApplySteeringBehaviors(float DeltaTime)
 		FRotator newRotation = FRotator(currentRotationAngle, 0, 0);
 		SetActorRotation(newRotation);
 	}
+
+	if(m_currentSteering) delete m_currentSteering;
+	if(m_currentRotationSteering) delete m_currentRotationSteering;
 }
 
 void AAICharacter::DrawDebug()
 {
-	TArray<FVector> Points =
+	TArray<FVector> PathPoints;
+
+	for (auto Point : m_pathTargets)
 	{
-		FVector(0.f, 0.f, 0.f),
-		FVector(100.f, 0.f, 0.f),
-		FVector(100.f, 0.f, 100.f),
-		FVector(100.f, 0.f, 100.f),
-		FVector(0.f, 0.f, 100.f)
-	};
+		PathPoints.Add(Point->GetActorLocation());
+	}
 
-	SetPath(this, TEXT("follow_path"), TEXT("path"), Points, 5.0f, PathMaterial);
+	SetPath(this, TEXT("follow_path"), TEXT("path"), PathPoints, 5.0f, PathMaterial);
 
-	SetCircle(this, TEXT("targetPosition"), m_params.targetPosition, m_params.deceleration_radius);
+	SetCircle(this, TEXT("targetPosition"), m_params.targetPosition, 15);
 	FVector dir(cos(FMath::DegreesToRadians(m_params.targetRotation)), 0.0f, sin(FMath::DegreesToRadians(m_params.targetRotation)));
 	SetArrow(this, TEXT("targetRotation"), dir, 80.0f);
-
-	TArray<TArray<FVector>> Polygons = {
-		{ FVector(0.f, 0.f, 0.f), FVector(100.f, 0.f, 0.f), FVector(100.f, 0.f, 100.0f), FVector(0.f, 0.f, 100.0f) },
-		{ FVector(100.f, 0.f, 0.f), FVector(200.f, 0.f, 0.f), FVector(200.f, 0.f, 100.0f) }
-	};
-	SetPolygons(this, TEXT("navmesh"), TEXT("mesh"), Polygons, NavmeshMaterial);
 }
 
 float AAICharacter::convertTo360(float a) //For some reason this gave me compile erros if I used utils

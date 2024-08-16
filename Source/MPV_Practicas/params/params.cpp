@@ -65,22 +65,70 @@ bool ReadParams(const char* filename, Params& params)
 		if (paramElem)
 		{
 			value = paramElem->GetAttribute("value");
-			FDefaultValueHelper::ParseFloat(value, params.deceleration_radius);
+			FDefaultValueHelper::ParseFloat(value, params.dest_radius);
+
 		}
 
-		paramElem = MyChildNode->FindChildNode(TEXT("max_angular_acceleration"));
-		if (paramElem)
-		{
-			value = paramElem->GetAttribute("value");
-			FDefaultValueHelper::ParseFloat(value, params.max_angular_acceleration);
-		}
 
 		paramElem = MyChildNode->FindChildNode(TEXT("max_angular_velocity"));
 		if (paramElem)
 		{
 			value = paramElem->GetAttribute("value");
 			FDefaultValueHelper::ParseFloat(value, params.max_angular_velocity);
+
 		}
+
+
+		paramElem = MyChildNode->FindChildNode(TEXT("max_angular_acceleration"));
+		if (paramElem)
+		{
+			value = paramElem->GetAttribute("value");
+			FDefaultValueHelper::ParseFloat(value, params.max_angular_acceleration);
+
+		}
+
+
+		paramElem = MyChildNode->FindChildNode(TEXT("angular_arrive_radius"));
+		if (paramElem)
+		{
+			value = paramElem->GetAttribute("value");
+			FDefaultValueHelper::ParseFloat(value, params.angular_arrive_radius);
+
+		}
+
+		paramElem = MyChildNode->FindChildNode(TEXT("targetRotation"));
+		if (paramElem)
+		{
+			value = paramElem->GetAttribute("value");
+			FDefaultValueHelper::ParseFloat(value, params.targetRotation);
+
+		}
+		
+		paramElem = MyChildNode->FindChildNode(TEXT("look_ahead"));
+		if (paramElem)
+		{
+			value = paramElem->GetAttribute("value");
+			FDefaultValueHelper::ParseFloat(value, params.look_ahead);
+
+		}
+
+		paramElem = MyChildNode->FindChildNode(TEXT("time_ahead"));
+		if (paramElem)
+		{
+			value = paramElem->GetAttribute("value");
+			FDefaultValueHelper::ParseFloat(value, params.time_ahead);
+
+		}
+
+		paramElem = MyChildNode->FindChildNode(TEXT("char_radius"));
+		if (paramElem)
+		{
+			value = paramElem->GetAttribute("value");
+			FDefaultValueHelper::ParseFloat(value, params.radius);
+
+		}
+
+		
 	}
 	return true;
 }

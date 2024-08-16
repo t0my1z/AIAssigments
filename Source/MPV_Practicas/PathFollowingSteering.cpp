@@ -14,26 +14,23 @@ PathFollowingSteering::PathFollowingSteering()
 
 PathFollowingSteering::~PathFollowingSteering()
 {
+
 }
 
 FVector PathFollowingSteering::GetSteering(AAICharacter* _pChar, float DeltaTime)
 {
-	Params params = _pChar->GetParams();
-	
+	//Get the positions of our pathTargets and store them
 	TArray<FVector> pointPositions;
-
 	for (int i = 0; i < _pChar->m_pathTargets.Num(); ++i)
 	{
 		pointPositions.Push(_pChar->m_pathTargets[i]->GetActorLocation());
 	}
-
-	const float PredictDist = 125.f;
-	FVector CurrentPredictedPos = _pChar->GetActorLocation() + _pChar->m_currentVelocity.GetSafeNormal() * PredictDist;
-	//DrawDebugSphere(_pChar->GetWorld(), CurrentPredictedPos, 5, 5, FColor::Black);
-	int closestSegmentIndex = 0;
+	
+	//Calculate the nearest point in the path, and its next point
+	FVector NearestPoint = FVector::Zero();
+	FVector NextPoint = FVector::Zero();
 	int endSegmentIndex = 0;
 	float currentClosestDist = 0;
-	
 	for (int i = 0; i < pointPositions.Num(); ++i)
 	{
 		int nextIndex = i + 1;
@@ -42,41 +39,49 @@ FVector PathFollowingSteering::GetSteering(AAICharacter* _pChar, float DeltaTime
 			nextIndex = 0;
 		}
 		
-		FVector closestPoint = UKismetMathLibrary::FindClosestPointOnSegment(CurrentPredictedPos, pointPositions[i], pointPositions[nextIndex]);
-		FVector closest = CurrentPredictedPos - closestPoint;
-		
-		if(closest.Length() < currentClosestDist || currentClosestDist == 0)
+		FVector closestPoint = UKismetMathLibrary::FindClosestPointOnSegment(_pChar->GetActorLocation(), pointPositions[i], pointPositions[nextIndex]);
+
+		float distanceToPoint = FVector::Dist(closestPoint, _pChar->GetActorLocation());
+		if(distanceToPoint < currentClosestDist || currentClosestDist == 0)
 		{
-			currentClosestDist = closest.Length();
-			closestSegmentIndex = i;
+			NearestPoint = closestPoint;
+			NextPoint = pointPositions[nextIndex];
+			currentClosestDist = distanceToPoint;
 			endSegmentIndex = nextIndex;
 		}
 	}
+	SetCircle(_pChar, TEXT("predictedPathPos"), NearestPoint, 15, FColor::Cyan);
 
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red,TEXT("StartSegment Is: " + FString::FromInt(closestSegmentIndex)));
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red,TEXT("EndSegment is: " + FString::FromInt(endSegmentIndex)));
+	//Using the calculated nearest point, predict the position we will be in using the next point
+	float lookAheadDist = _pChar->GetParams().look_ahead;
+	FVector dirFromPointToNext = NextPoint - NearestPoint;
+	dirFromPointToNext.Normalize();
 
-	FVector closestPointToPath = UKismetMathLibrary::FindClosestPointOnSegment(CurrentPredictedPos, pointPositions[closestSegmentIndex], pointPositions[endSegmentIndex]);
-	
-	FVector PredictionOnPath = closestPointToPath + _pChar->m_currentVelocity.GetSafeNormal() * PredictDist;
+	FVector PredictedPos = dirFromPointToNext * lookAheadDist;
+	PredictedPos += NearestPoint;
 
-	FVector point1 = pointPositions[closestSegmentIndex];
-	FVector point2 = pointPositions[endSegmentIndex];
+	//After calculating the predicted position, we need to check if it's overshooting, and in case it is
+	//update our next point and recalculate the predicted position
+	float distFromNearestPointToPredictedPos = FVector::Dist(NearestPoint, PredictedPos);
+	float distToNextPointFromNearest = FVector::Dist(NearestPoint, NextPoint);
+	if(distFromNearestPointToPredictedPos >= distToNextPointFromNearest)
+	{
+		int nextIndex = endSegmentIndex + 1;
+		if(nextIndex >= pointPositions.Num())
+		{
+			nextIndex = 0;
+		}
 
-	float surprasedDistanceFromSegment =IsPointOnSegment(point1,point2, PredictionOnPath);
-	
-	return FVector::Zero();
+		PredictedPos = FVector::Zero();
+		FVector dirFromPointToNewNext = pointPositions[nextIndex] - NextPoint;
+		dirFromPointToNewNext.Normalize();
+		PredictedPos = dirFromPointToNewNext * (distFromNearestPointToPredictedPos - distToNextPointFromNearest);
+		PredictedPos += NextPoint;
+	}
+
+	SetCircle(_pChar, TEXT("endPredictedPathPos"), PredictedPos, 15, FColor::Black);
+
+	//we return the raw predictedPosition because we then use our Seek behaviour to correctly calculate acceleration
+	return PredictedPos;
 }
 
-float PathFollowingSteering::IsPointOnSegment(FVector _pos1, FVector _pos2, FVector _pointToCheck)
-{
-	if((_pointToCheck.X >= _pos1.X && _pointToCheck.X <= _pos2.X) &&
-		_pointToCheck.Y >= _pos1.Y && _pointToCheck.Y <= _pos2.Y)
-	{
-		return 0;
-	}
-	else
-	{
-		
-	}
-}
